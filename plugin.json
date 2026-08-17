@@ -1,15 +1,16 @@
 {
-    "Id": "{{.Id}}",
+    "Id": "93b96f6e-4668-4a2d-8e40-232cf05769aa",
     "TriggerKeywords": [
-        "{{.TriggerKeyword}}"
+        "k",
+        "kagi"
     ],
-    "Name": "{{.Name}}",
-    "Description": "{{.Description}}",
-    "Author": "{{.Author}}",
+    "Name": "Kagi Search",
+    "Description": "Search Kagi web results",
+    "Author": "Daniel Fox",
     "Version": "0.0.1",
     "MinWoxVersion": "2.0.0",
     "Runtime": "python",
-    "Website": "{{.Website}}",
+    "Website": "https://github.com/danudey/wox-plugin-kagi",
     "Entry": "main.py",
     "Icon": "relative:images/app.svg",
     "SupportedOS": [
