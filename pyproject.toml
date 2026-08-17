@@ -1,9 +1,11 @@
 [project]
-name = "wox-plugin-template-python"
-version = "0.0.1"
+name = "wox-plugin-kagi"
+version = "1.0.0"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["wox-plugin==0.0.81"]
+dependencies = [
+    "wox-plugin==0.0.81",
+]
 
 [project.optional-dependencies]
 dev = ["ruff", "mypy"]

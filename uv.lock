@@ -128,8 +128,8 @@ wheels = [
 ]
 
 [[package]]
-name = "wox-plugin-template-python"
-version = "0.0.1"
+name = "wox-plugin-kagi"
+version = "1.0.0"
 source = { virtual = "." }
 dependencies = [
     { name = "wox-plugin" },

@@ -33,10 +33,10 @@ from wox_plugin import (
     WoxPreviewType,
 )
 
-from .kagi_client import Answer, KagiClient, KagiError, SearchItem
-from .services import SERVICES_BY_KEY, Service, ServiceKind, build_url
-from .settings import PluginSettings, ServiceConfig, load_settings, split_command
-from .text import (
+from kagi_client import Answer, KagiClient, KagiError, SearchItem
+from services import SERVICES_BY_KEY, Service, ServiceKind, build_url
+from settings import PluginSettings, ServiceConfig, load_settings, split_command
+from text import (
     clean_snippet,
     format_published,
     looks_like_url,

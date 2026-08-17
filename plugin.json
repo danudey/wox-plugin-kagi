@@ -1,21 +1,728 @@
 {
-    "Id": "93b96f6e-4668-4a2d-8e40-232cf05769aa",
-    "TriggerKeywords": [
-        "k",
-        "kagi"
-    ],
-    "Name": "Kagi Search",
-    "Description": "Search Kagi web results",
-    "Author": "Daniel Fox",
-    "Version": "0.0.1",
-    "MinWoxVersion": "2.0.0",
-    "Runtime": "python",
-    "Website": "https://github.com/danudey/wox-plugin-kagi",
-    "Entry": "main.py",
-    "Icon": "relative:images/app.svg",
-    "SupportedOS": [
-        "windows",
-        "linux",
-        "darwin"
-    ]
+  "Id": "93b96f6e-4668-4a2d-8e40-232cf05769aa",
+  "Name": "Kagi",
+  "Description": "Search Kagi and its verticals: web, images, videos, news, podcasts, maps, translate, assistant, summarizer and more",
+  "Author": "Daniel Fox",
+  "Version": "1.0.0",
+  "MinWoxVersion": "2.0.0",
+  "Runtime": "python",
+  "Website": "https://github.com/danudey/wox-plugin-kagi",
+  "Entry": "main.py",
+  "Icon": "relative:images/app.svg",
+  "TriggerKeywords": [
+    "kagi",
+    "k"
+  ],
+  "SupportedOS": [
+    "windows",
+    "linux",
+    "darwin"
+  ],
+  "Features": [
+    {
+      "Name": "debounce",
+      "Params": {
+        "IntervalMs": 250
+      }
+    }
+  ],
+  "SettingDefinitions": [
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Autocomplete",
+        "Tooltip": "Suggestions come from Kagi's free autocomplete endpoint and need no API key.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "suggestions_enabled",
+        "Label": "Show Kagi autocomplete suggestions",
+        "DefaultValue": "true",
+        "Tooltip": "Ask kagisuggest.com for completions of what you are typing.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "suggestions_limit",
+        "Label": "Maximum suggestions",
+        "DefaultValue": "6",
+        "Tooltip": "How many suggestions to list, 0 to 15.",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [
+          {
+            "Type": "is_number",
+            "Value": {
+              "IsInteger": true,
+              "IsFloat": false
+            }
+          }
+        ],
+        "Style": {
+          "Width": 120
+        }
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "request_timeout",
+        "Label": "Network timeout",
+        "DefaultValue": "6",
+        "Tooltip": "Seconds to wait for Kagi before giving up.",
+        "Suffix": "s",
+        "MaxLines": 1,
+        "Validators": [
+          {
+            "Type": "is_number",
+            "Value": {
+              "IsInteger": true,
+              "IsFloat": false
+            }
+          }
+        ],
+        "Style": {
+          "Width": 120
+        }
+      }
+    },
+    {
+      "Type": "newline",
+      "Value": {
+        "Style": {}
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Kagi API",
+        "Tooltip": "Only needed for inline answers. Every API call below spends credit on your Kagi account.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "label",
+      "Value": {
+        "Content": "Create a key at kagi.com/settings?p=api. Leave this empty to use the plugin as a launcher only, which needs no key and costs nothing.",
+        "Tooltip": "",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "api_key",
+        "Label": "API key",
+        "DefaultValue": "",
+        "Tooltip": "Sent as an Authorization: Bot header.",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 420
+        }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "api_search_inline",
+        "Label": "Show web, news and small web results inline (paid)",
+        "DefaultValue": "false",
+        "Tooltip": "Calls the Kagi Search and Enrichment APIs on every query. Billed per search.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "api_fastgpt_inline",
+        "Label": "Answer Quick Answer queries inline (paid)",
+        "DefaultValue": "false",
+        "Tooltip": "Calls the FastGPT API. Billed per query.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "api_summarizer_inline",
+        "Label": "Summarize inline (paid)",
+        "DefaultValue": "false",
+        "Tooltip": "Calls the Universal Summarizer API. Billed per token.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "api_result_limit",
+        "Label": "Inline results per query",
+        "DefaultValue": "5",
+        "Tooltip": "How many API results to list, 1 to 20.",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [
+          {
+            "Type": "is_number",
+            "Value": {
+              "IsInteger": true,
+              "IsFloat": false
+            }
+          }
+        ],
+        "Style": {
+          "Width": 120
+        }
+      }
+    },
+    {
+      "Type": "newline",
+      "Value": {
+        "Style": {}
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Translate and summarize options",
+        "Tooltip": "",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "translate_source",
+        "Label": "Translate from",
+        "DefaultValue": "auto",
+        "Tooltip": "Language code, or \"auto\" to let Kagi detect it.",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "translate_target",
+        "Label": "Translate into",
+        "DefaultValue": "en",
+        "Tooltip": "Language code such as en, fr or ja. Override per query with a trailing \"> fr\".",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "select",
+      "Value": {
+        "Key": "summarizer_engine",
+        "Label": "Summarizer engine",
+        "DefaultValue": "cecil",
+        "Tooltip": "",
+        "IsMulti": false,
+        "Options": [
+          {
+            "Label": "Cecil — friendly, general purpose",
+            "Value": "cecil"
+          },
+          {
+            "Label": "Agnes — formal, technical",
+            "Value": "agnes"
+          },
+          {
+            "Label": "Daphne — informal, creative",
+            "Value": "daphne"
+          },
+          {
+            "Label": "Muriel — highest quality, flat fee",
+            "Value": "muriel"
+          }
+        ],
+        "Validators": [],
+        "Style": {
+          "Width": 220
+        }
+      }
+    },
+    {
+      "Type": "select",
+      "Value": {
+        "Key": "summarizer_type",
+        "Label": "Summary style",
+        "DefaultValue": "summary",
+        "Tooltip": "",
+        "IsMulti": false,
+        "Options": [
+          {
+            "Label": "Paragraph summary",
+            "Value": "summary"
+          },
+          {
+            "Label": "Key takeaways",
+            "Value": "takeaway"
+          }
+        ],
+        "Validators": [],
+        "Style": {
+          "Width": 220
+        }
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "summarizer_language",
+        "Label": "Summary language",
+        "DefaultValue": "",
+        "Tooltip": "Language code for the summary. Leave empty to keep the source language.",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "newline",
+      "Value": {
+        "Style": {}
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Services and keywords",
+        "Tooltip": "Turn each Kagi service on or off and choose the keyword that selects it.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "label",
+      "Value": {
+        "Content": "Type the plugin trigger keyword, then a service keyword, then your query. For example: kagi img red pandas. A service with an empty keyword is only reachable from the service list, except for Web Search, which is what an unprefixed query falls back to.",
+        "Tooltip": "",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Web Search",
+        "Tooltip": "Standard Kagi web search",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_web_enabled",
+        "Label": "Enable",
+        "DefaultValue": "true",
+        "Tooltip": "Show Web Search in results and in the service list. Does not require an API key.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_web_keyword",
+        "Label": "Web Search keyword",
+        "DefaultValue": "",
+        "Tooltip": "Leave empty to make this the unprefixed default.",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Image Search",
+        "Tooltip": "Kagi image search",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_images_enabled",
+        "Label": "Enable",
+        "DefaultValue": "true",
+        "Tooltip": "Show Image Search in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_images_keyword",
+        "Label": "Image Search keyword",
+        "DefaultValue": "img",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Video Search",
+        "Tooltip": "Kagi video search",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_videos_enabled",
+        "Label": "Enable",
+        "DefaultValue": "true",
+        "Tooltip": "Show Video Search in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_videos_keyword",
+        "Label": "Video Search keyword",
+        "DefaultValue": "vid",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "News Search",
+        "Tooltip": "Kagi news search",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_news_enabled",
+        "Label": "Enable",
+        "DefaultValue": "true",
+        "Tooltip": "Show News Search in results and in the service list. API token optional.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_news_keyword",
+        "Label": "News Search keyword",
+        "DefaultValue": "news",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Podcast Search",
+        "Tooltip": "Kagi podcast search",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_podcasts_enabled",
+        "Label": "Enable",
+        "DefaultValue": "true",
+        "Tooltip": "Show Podcast Search in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_podcasts_keyword",
+        "Label": "Podcast Search keyword",
+        "DefaultValue": "pod",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Maps Search",
+        "Tooltip": "Kagi maps search",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_maps_enabled",
+        "Label": "Enable",
+        "DefaultValue": "true",
+        "Tooltip": "Show Maps in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_maps_keyword",
+        "Label": "Maps keyword",
+        "DefaultValue": "map",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "head",
+      "Value": {
+        "Content": "Ask AI",
+        "Tooltip": "Ask the Kagi AI assistant",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_assistant_enabled",
+        "Label": "Enable",
+        "DefaultValue": "true",
+        "Tooltip": "Show Assistant in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_assistant_keyword",
+        "Label": "Assistant keyword",
+        "DefaultValue": "ask",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_fastgpt_enabled",
+        "Label": "Quick Answer — Ask FastGPT for a cited answer (paid API optional)",
+        "DefaultValue": "true",
+        "Tooltip": "Show Quick Answer in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_fastgpt_keyword",
+        "Label": "Quick Answer keyword",
+        "DefaultValue": "gpt",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_summarize_enabled",
+        "Label": "Universal Summarizer — Summarize a page, video or document (paid API optional)",
+        "DefaultValue": "true",
+        "Tooltip": "Show Universal Summarizer in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_summarize_keyword",
+        "Label": "Universal Summarizer keyword",
+        "DefaultValue": "sum",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_translate_enabled",
+        "Label": "Translate — Translate text or a web page with Kagi Translate",
+        "DefaultValue": "true",
+        "Tooltip": "Show Translate in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_translate_keyword",
+        "Label": "Translate keyword",
+        "DefaultValue": "tr",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_proofread_enabled",
+        "Label": "Proofread — Correct grammar and style with Kagi Translate",
+        "DefaultValue": "true",
+        "Tooltip": "Show Proofread in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_proofread_keyword",
+        "Label": "Proofread keyword",
+        "DefaultValue": "proof",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_dictionary_enabled",
+        "Label": "Dictionary — Look a word up in the Kagi dictionary",
+        "DefaultValue": "true",
+        "Tooltip": "Show Dictionary in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_dictionary_keyword",
+        "Label": "Dictionary keyword",
+        "DefaultValue": "dict",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_smallweb_enabled",
+        "Label": "Small Web — Discover independent, non commercial websites (paid API optional)",
+        "DefaultValue": "true",
+        "Tooltip": "Show Small Web in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_smallweb_keyword",
+        "Label": "Small Web keyword",
+        "DefaultValue": "small",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    },
+    {
+      "Type": "checkbox",
+      "Value": {
+        "Key": "service_kagi_news_enabled",
+        "Label": "Kagi News — Open the Kagi News (Kite) daily briefing",
+        "DefaultValue": "true",
+        "Tooltip": "Show Kagi News in results and in the service list.",
+        "Style": {}
+      }
+    },
+    {
+      "Type": "textbox",
+      "Value": {
+        "Key": "service_kagi_news_keyword",
+        "Label": "Kagi News keyword",
+        "DefaultValue": "kite",
+        "Tooltip": "",
+        "Suffix": "",
+        "MaxLines": 1,
+        "Validators": [],
+        "Style": {
+          "Width": 160
+        }
+      }
+    }
+  ]
 }
